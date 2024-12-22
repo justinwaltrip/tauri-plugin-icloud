@@ -4,6 +4,8 @@ import UIKit
 import WebKit
 
 class iCloudPlugin: Plugin {
+  private var documentPickerDelegate: DocumentPickerDelegate?
+
   @objc public func openFolder(_ invoke: Invoke) throws {
     NSLog("iCloudPlugin: Starting openFolder function")
 
@@ -23,7 +25,7 @@ class iCloudPlugin: Plugin {
       NSLog("iCloudPlugin: Document picker configured")
 
       // Set up document picker callback
-      documentPicker.delegate = DocumentPickerDelegate { urls in
+      self.documentPickerDelegate = DocumentPickerDelegate { urls in
         NSLog("iCloudPlugin: Document picker callback received with \(urls.count) URLs")
 
         if let selectedURL = urls.first {
@@ -55,6 +57,7 @@ class iCloudPlugin: Plugin {
 
       // Present the document picker
       NSLog("iCloudPlugin: Presenting document picker")
+      documentPicker.delegate = self.documentPickerDelegate
       rootViewController.present(documentPicker, animated: true)
     }
   }

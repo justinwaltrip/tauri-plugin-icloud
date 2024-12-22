@@ -1,8 +1,8 @@
 import XCTest
-@testable import ExamplePlugin
+@testable import iCloudPlugin
 
-final class ExamplePluginTests: XCTestCase {
+final class iCloudPluginTests: XCTestCase {
     func testExample() throws {
-        let plugin = ExamplePlugin()
+        let plugin = iCloudPlugin()
     }
 }

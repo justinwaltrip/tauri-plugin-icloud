@@ -35,7 +35,7 @@ impl<R: Runtime, T: Manager<R>> crate::IcloudExt<R> for T {
 /// Initializes the plugin.
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
   Builder::new("icloud")
-    .invoke_handler(tauri::generate_handler![commands::ping])
+    .invoke_handler(tauri::generate_handler![commands::open_folder])
     .setup(|app, api| {
       #[cfg(mobile)]
       let icloud = mobile::init(app, api)?;

@@ -14,9 +14,10 @@ pub fn init<R: Runtime, C: DeserializeOwned>(
 pub struct Icloud<R: Runtime>(AppHandle<R>);
 
 impl<R: Runtime> Icloud<R> {
-  pub fn ping(&self, payload: PingRequest) -> crate::Result<PingResponse> {
-    Ok(PingResponse {
-      value: payload.value,
-    })
-  }
+    pub fn open_folder(&self, _payload: OpenFolderRequest) -> crate::Result<OpenFolderResponse> {
+        Ok(OpenFolderResponse {
+            path: Some("fake-path".to_string()),
+            url: Some("fake-url".to_string()),
+        })
+    }
 }

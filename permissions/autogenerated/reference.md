@@ -16,6 +16,32 @@ Default permissions for the plugin
 <tr>
 <td>
 
+`icloud:allow-open-folder`
+
+</td>
+<td>
+
+Enables the open_folder command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-open-folder`
+
+</td>
+<td>
+
+Denies the open_folder command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `icloud:allow-ping`
 
 </td>

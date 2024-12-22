@@ -52,6 +52,7 @@
                     librsvg
                     libsoup_3
                     pango
+                    swift-format
                   ] ++ lib.optionals pkgs.stdenv.isDarwin [
                     frameworks.SystemConfiguration
                     frameworks.AppKit

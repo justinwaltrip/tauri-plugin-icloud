@@ -5,9 +5,9 @@ use crate::Result;
 use crate::IcloudExt;
 
 #[command]
-pub(crate) async fn ping<R: Runtime>(
+pub(crate) async fn open_folder<R: Runtime>(
     app: AppHandle<R>,
-    payload: PingRequest,
-) -> Result<PingResponse> {
-    app.icloud().ping(payload)
+    payload: OpenFolderRequest,
+) -> Result<OpenFolderResponse> {
+    app.icloud().open_folder(payload)
 }

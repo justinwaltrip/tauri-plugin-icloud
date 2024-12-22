@@ -2,3 +2,21 @@
 
 # direnv
 .direnv
+
+/.vs
+.DS_Store
+.Thumbs.db
+*.sublime*
+.idea/
+debug.log
+package-lock.json
+.vscode/settings.json
+yarn.lock
+
+/.tauri
+/target
+Cargo.lock
+node_modules/
+
+dist-js
+dist

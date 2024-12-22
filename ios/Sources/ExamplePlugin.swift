@@ -9,10 +9,6 @@ class PingArgs: Decodable {
 
 class ExamplePlugin: Plugin {
   @objc public func ping(_ invoke: Invoke) throws {
-    let args = try invoke.parseArgs(PingArgs.self)
-    invoke.resolve(["value": args.value ?? ""])
-  }
-  @objc public func isICloudAvailable(_ invoke: Invoke) {
     if let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
       // iCloud Documents directory is available
       invoke.resolve([

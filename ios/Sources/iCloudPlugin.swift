@@ -4,42 +4,57 @@ import UIKit
 import WebKit
 
 class iCloudPlugin: Plugin {
-
   @objc public func openFolder(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting openFolder function")
+
     DispatchQueue.main.async {
       // Get the root view controller
       guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
+        NSLog("iCloudPlugin: Error - No root view controller found")
         invoke.reject("No root view controller found")
         return
       }
+      NSLog("iCloudPlugin: Root view controller found")
 
       // Create document picker configuration
       let documentPicker = UIDocumentPickerViewController(
         documentTypes: ["public.folder"], in: .open)
       documentPicker.allowsMultipleSelection = false
+      NSLog("iCloudPlugin: Document picker configured")
 
       // Set up document picker callback
       documentPicker.delegate = DocumentPickerDelegate { urls in
+        NSLog("iCloudPlugin: Document picker callback received with \(urls.count) URLs")
+
         if let selectedURL = urls.first {
+          NSLog("iCloudPlugin: Selected URL: \(selectedURL.absoluteString)")
+
           // Grant security-scoped resource access
           let securitySuccess = selectedURL.startAccessingSecurityScopedResource()
+          NSLog("iCloudPlugin: Security access granted: \(securitySuccess)")
+
           defer {
             if securitySuccess {
               selectedURL.stopAccessingSecurityScopedResource()
+              NSLog("iCloudPlugin: Security access stopped")
             }
           }
 
           // Return the selected folder path
-          invoke.resolve([
+          let result = [
             "path": selectedURL.path,
             "url": selectedURL.absoluteString,
-          ])
+          ]
+          NSLog("iCloudPlugin: Resolving with path: \(selectedURL.path)")
+          invoke.resolve(result)
         } else {
+          NSLog("iCloudPlugin: Error - No folder selected")
           invoke.reject("No folder selected")
         }
       }
 
       // Present the document picker
+      NSLog("iCloudPlugin: Presenting document picker")
       rootViewController.present(documentPicker, animated: true)
     }
   }
@@ -51,15 +66,18 @@ class iCloudPlugin: Plugin {
     init(completion: @escaping ([URL]) -> Void) {
       self.completion = completion
       super.init()
+      NSLog("DocumentPickerDelegate: Initialized")
     }
 
     func documentPicker(
       _ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]
     ) {
+      NSLog("DocumentPickerDelegate: Documents picked: \(urls)")
       completion(urls)
     }
 
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+      NSLog("DocumentPickerDelegate: Picker was cancelled")
       completion([])
     }
   }
@@ -67,5 +85,6 @@ class iCloudPlugin: Plugin {
 
 @_cdecl("init_plugin_icloud")
 func initPlugin() -> Plugin {
+  NSLog("iCloudPlugin: Initializing plugin")
   return iCloudPlugin()
 }

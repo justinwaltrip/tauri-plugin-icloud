@@ -7,6 +7,25 @@ pub struct OpenFolderRequest {}
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenFolderResponse {
-    pub path: Option<String>,
+    pub relative_path: Option<String>,
+    pub absolute_path: Option<String>,
     pub url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadDirRequest {
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadDirEntry {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadDirResponse {
+    pub entries: Vec<ReadDirEntry>,
 }

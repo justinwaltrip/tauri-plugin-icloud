@@ -31,3 +31,11 @@ impl<R: Runtime> Icloud<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_dir(&self, payload: ReadDirRequest) -> crate::Result<ReadDirResponse> {
+        self.0
+            .run_mobile_plugin("readDir", payload)
+            .map_err(Into::into)
+    }
+}

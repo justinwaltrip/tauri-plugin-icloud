@@ -3,6 +3,10 @@ import Tauri
 import UIKit
 import WebKit
 
+class ReadDirArgs: Decodable {
+  let path: String
+}
+
 class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
 
@@ -65,23 +69,44 @@ class iCloudPlugin: Plugin {
   // Helper class to handle document picker delegate
   private class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
     private let completion: ([URL]) -> Void
-
     init(completion: @escaping ([URL]) -> Void) {
       self.completion = completion
       super.init()
       NSLog("DocumentPickerDelegate: Initialized")
     }
-
     func documentPicker(
       _ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]
     ) {
       NSLog("DocumentPickerDelegate: Documents picked: \(urls)")
       completion(urls)
     }
-
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
       NSLog("DocumentPickerDelegate: Picker was cancelled")
       completion([])
+    }
+  }
+
+  @objc public func readDir(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting readDir function")
+    let args = try invoke.parseArgs(ReadDirArgs.self)
+    let path = args.path
+    DispatchQueue.global(qos: .userInitiated).async {
+      do {
+        guard let url = URL(string: path) else {
+          NSLog("iCloudPlugin: Invalid URL path")
+          invoke.reject("Invalid URL path")
+          return
+        }
+
+        let contents = try FileManager.default.contentsOfDirectory(
+          at: url, includingPropertiesForKeys: nil, options: [])
+        let contentNames = contents.map { $0.lastPathComponent }
+        NSLog("iCloudPlugin: Directory contents: \(contentNames)")
+        invoke.resolve(contentNames)
+      } catch {
+        NSLog("iCloudPlugin: Error reading directory: \(error)")
+        invoke.reject("Error reading directory: \(error)")
+      }
     }
   }
 }

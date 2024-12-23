@@ -16,8 +16,19 @@ pub struct Icloud<R: Runtime>(AppHandle<R>);
 impl<R: Runtime> Icloud<R> {
     pub fn open_folder(&self, _payload: OpenFolderRequest) -> crate::Result<OpenFolderResponse> {
         Ok(OpenFolderResponse {
-            path: Some("fake-path".to_string()),
+            relative_path: Some("fake-relative-path".to_string()),
+            absolute_path: Some("fake-absolute-path".to_string()),
             url: Some("fake-url".to_string()),
+        })
+    }
+}
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_dir(&self, _payload: ReadDirRequest) -> crate::Result<ReadDirResponse> {
+        Ok(ReadDirResponse {
+            entries: vec![ReadDirEntry {
+                name: "fake-name".to_string(),
+            }],
         })
     }
 }

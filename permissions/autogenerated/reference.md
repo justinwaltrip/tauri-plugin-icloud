@@ -64,4 +64,30 @@ Denies the ping command without any pre-configured scope.
 
 </td>
 </tr>
+
+<tr>
+<td>
+
+`icloud:allow-read-dir`
+
+</td>
+<td>
+
+Enables the read_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-read-dir`
+
+</td>
+<td>
+
+Denies the read_dir command without any pre-configured scope.
+
+</td>
+</tr>
 </table>

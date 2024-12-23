@@ -315,6 +315,16 @@
           "const": "deny-ping"
         },
         {
+          "description": "Enables the read_dir command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-read-dir"
+        },
+        {
+          "description": "Denies the read_dir command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-read-dir"
+        },
+        {
           "description": "Default permissions for the plugin",
           "type": "string",
           "const": "default"

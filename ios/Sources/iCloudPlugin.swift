@@ -9,58 +9,109 @@ class ReadDirArgs: Decodable {
 
 class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
+  private let bookmarkKey = "FolderBookmark"
+
+  // Add a method to save bookmark data
+  private func saveSecurityScopedBookmark(for url: URL) throws -> String {
+    let bookmarkData = try url.bookmarkData(
+      options: .minimalBookmark,
+      includingResourceValuesForKeys: nil,
+      relativeTo: nil
+    )
+    // Save bookmark data to UserDefaults
+    UserDefaults.standard.set(bookmarkData, forKey: bookmarkKey)
+    return url.absoluteString
+  }
+
+  private func resolveSecurityScopedBookmark() -> URL? {
+    guard let bookmarkData = UserDefaults.standard.data(forKey: bookmarkKey) else {
+      NSLog("iCloudPlugin: No bookmark data found")
+      return nil
+    }
+
+    var isStale = false
+    do {
+      let url = try URL(
+        resolvingBookmarkData: bookmarkData,
+        options: [],
+        relativeTo: nil,
+        bookmarkDataIsStale: &isStale
+      )
+
+      if isStale {
+        NSLog("iCloudPlugin: Bookmark is stale, attempting to refresh")
+        if url.startAccessingSecurityScopedResource() {
+          defer { url.stopAccessingSecurityScopedResource() }
+          _ = try? saveSecurityScopedBookmark(for: url)
+        }
+      }
+
+      return url
+    } catch {
+      NSLog("iCloudPlugin: Error resolving bookmark: \(error)")
+      return nil
+    }
+  }
 
   @objc public func openFolder(_ invoke: Invoke) throws {
     NSLog("iCloudPlugin: Starting openFolder function")
-
     DispatchQueue.main.async {
-      // Get the root view controller
       guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
         NSLog("iCloudPlugin: Error - No root view controller found")
         invoke.reject("No root view controller found")
         return
       }
-      NSLog("iCloudPlugin: Root view controller found")
 
-      // Create document picker configuration
       let documentPicker = UIDocumentPickerViewController(
         documentTypes: ["public.folder"], in: .open)
       documentPicker.allowsMultipleSelection = false
-      NSLog("iCloudPlugin: Document picker configured")
 
-      // Set up document picker callback
       self.documentPickerDelegate = DocumentPickerDelegate { urls in
-        NSLog("iCloudPlugin: Document picker callback received with \(urls.count) URLs")
-
         if let selectedURL = urls.first {
-          NSLog("iCloudPlugin: Selected URL: \(selectedURL.absoluteString)")
-
-          // Grant security-scoped resource access
-          let securitySuccess = selectedURL.startAccessingSecurityScopedResource()
-          NSLog("iCloudPlugin: Security access granted: \(securitySuccess)")
-
+          // Start accessing the security-scoped resource immediately
+          let accessGranted = selectedURL.startAccessingSecurityScopedResource()
           defer {
-            if securitySuccess {
+            if accessGranted {
               selectedURL.stopAccessingSecurityScopedResource()
-              NSLog("iCloudPlugin: Security access stopped")
             }
           }
 
-          // Return the selected folder path
-          let result = [
-            "path": selectedURL.path,
-            "url": selectedURL.absoluteString,
-          ]
-          NSLog("iCloudPlugin: Resolving with path: \(selectedURL.path)")
-          invoke.resolve(result)
+          do {
+            // Verify the URL is reachable
+            let reachable = try selectedURL.checkResourceIsReachable()
+            guard reachable else {
+              throw NSError(
+                domain: "iCloudPlugin", code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Selected folder is not reachable"])
+            }
+
+            // Create bookmark with additional options
+            let bookmarkData = try selectedURL.bookmarkData(
+              options: [],
+              includingResourceValuesForKeys: nil,
+              relativeTo: nil
+            )
+
+            // Save bookmark data
+            UserDefaults.standard.set(bookmarkData, forKey: self.bookmarkKey)
+
+            let result = [
+              "path": selectedURL.path,
+              "url": selectedURL.absoluteString,
+            ]
+
+            NSLog("iCloudPlugin: Successfully created bookmark for \(selectedURL.path)")
+            invoke.resolve(result)
+
+          } catch {
+            NSLog("iCloudPlugin: Error handling folder access: \(error)")
+            invoke.reject("Error handling folder access: \(error.localizedDescription)")
+          }
         } else {
-          NSLog("iCloudPlugin: Error - No folder selected")
           invoke.reject("No folder selected")
         }
       }
 
-      // Present the document picker
-      NSLog("iCloudPlugin: Presenting document picker")
       documentPicker.delegate = self.documentPickerDelegate
       rootViewController.present(documentPicker, animated: true)
     }
@@ -90,22 +141,36 @@ class iCloudPlugin: Plugin {
     NSLog("iCloudPlugin: Starting readDir function")
     let args = try invoke.parseArgs(ReadDirArgs.self)
     let path = args.path
-    DispatchQueue.global(qos: .userInitiated).async {
-      do {
-        guard let url = URL(string: path) else {
-          NSLog("iCloudPlugin: Invalid URL path")
-          invoke.reject("Invalid URL path")
-          return
-        }
 
+    DispatchQueue.global(qos: .userInitiated).async {
+      guard let url = URL(string: path) else {
+        invoke.reject("Invalid URL path")
+        return
+      }
+
+      // Try to get security-scoped access
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
         let contents = try FileManager.default.contentsOfDirectory(
-          at: url, includingPropertiesForKeys: nil, options: [])
+          at: url,
+          includingPropertiesForKeys: nil,
+          options: []
+        )
         let contentNames = contents.map { $0.lastPathComponent }
-        NSLog("iCloudPlugin: Directory contents: \(contentNames)")
         invoke.resolve(contentNames)
       } catch {
-        NSLog("iCloudPlugin: Error reading directory: \(error)")
-        invoke.reject("Error reading directory: \(error)")
+        invoke.reject("Error reading directory: \(error.localizedDescription)")
       }
     }
   }

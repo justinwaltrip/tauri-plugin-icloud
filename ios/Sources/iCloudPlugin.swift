@@ -167,8 +167,13 @@ class iCloudPlugin: Plugin {
           includingPropertiesForKeys: nil,
           options: []
         )
-        let contentNames = contents.map { $0.lastPathComponent }
-        invoke.resolve(contentNames)
+
+        let entries = contents.map { fileURL -> [String: String] in
+          return ["name": fileURL.lastPathComponent]
+        }
+
+        let response: [String: Any] = ["entries": entries]
+        invoke.resolve(response)
       } catch {
         invoke.reject("Error reading directory: \(error.localizedDescription)")
       }

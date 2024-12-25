@@ -190,10 +190,8 @@ class iCloudPlugin: Plugin {
     let path = args.path
 
     DispatchQueue.global(qos: .userInitiated).async {
-      guard let url = URL(string: path) else {
-        invoke.reject("Invalid URL path")
-        return
-      }
+      // Use fileURLWithPath instead of URL(string:)
+      let url = URL(fileURLWithPath: path)
 
       // Try to get security-scoped access
       guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
@@ -209,10 +207,22 @@ class iCloudPlugin: Plugin {
       }
 
       do {
-        let text = try String(contentsOf: url)
-        let response: [String: Any] = ["text": text]
+        // Add some debugging information
+        NSLog("iCloudPlugin: Attempting to read file at path: \(url.path)")
+
+        // Check if file exists and is readable
+        guard FileManager.default.fileExists(atPath: url.path) else {
+          invoke.reject("File does not exist at path: \(url.path)")
+          return
+        }
+
+        // Try to read the file
+        let text = try String(contentsOf: url, encoding: .utf8)
+        let response: [String: Any] = ["content": text]
         invoke.resolve(response)
+
       } catch {
+        NSLog("iCloudPlugin: Error reading file: \(error)")
         invoke.reject("Error reading text file: \(error.localizedDescription)")
       }
     }

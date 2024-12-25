@@ -47,3 +47,11 @@ impl<R: Runtime> Icloud<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_image_file(&self, payload: ReadImageFileRequest) -> crate::Result<ReadImageFileResponse> {
+        self.0
+            .run_mobile_plugin("readImageFile", payload)
+            .map_err(Into::into)
+    }
+}

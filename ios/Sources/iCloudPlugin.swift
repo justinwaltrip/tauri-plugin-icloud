@@ -1,3 +1,4 @@
+import Foundation
 import SwiftRs
 import Tauri
 import UIKit
@@ -8,6 +9,10 @@ class ReadDirArgs: Decodable {
 }
 
 class ReadTextFileArgs: Decodable {
+  let path: String
+}
+
+class ReadImageFileArgs: Decodable {
   let path: String
 }
 
@@ -224,6 +229,52 @@ class iCloudPlugin: Plugin {
       } catch {
         NSLog("iCloudPlugin: Error reading file: \(error)")
         invoke.reject("Error reading text file: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc public func readImageFile(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting readImageFile function")
+    let args = try invoke.parseArgs(ReadImageFileArgs.self)
+    let path = args.path
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      let url = URL(fileURLWithPath: path)
+
+      // Resolve security-scoped bookmark
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
+        // Ensure file exists
+        guard FileManager.default.fileExists(atPath: url.path) else {
+          invoke.reject("Image file does not exist at path: \(url.path)")
+          return
+        }
+
+        // Load image data
+        let imageData = try Data(contentsOf: url)
+
+        // Convert to a Base64 string
+        let base64String = imageData.base64EncodedString()
+
+        // Respond with the base64 encoded image
+        let response = [
+          "content": base64String
+        ]
+        invoke.resolve(response)
+      } catch {
+        NSLog("iCloudPlugin: Error reading image file: \(error)")
+        invoke.reject("Error reading image file: \(error.localizedDescription)")
       }
     }
   }

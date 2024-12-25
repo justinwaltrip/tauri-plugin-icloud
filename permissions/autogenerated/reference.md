@@ -94,6 +94,32 @@ Denies the read_dir command without any pre-configured scope.
 <tr>
 <td>
 
+`icloud:allow-read-image-file`
+
+</td>
+<td>
+
+Enables the read_image_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-read-image-file`
+
+</td>
+<td>
+
+Denies the read_image_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `icloud:allow-read-text-file`
 
 </td>

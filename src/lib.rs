@@ -37,6 +37,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
   Builder::new("icloud")
     .invoke_handler(tauri::generate_handler![commands::open_folder])
     .invoke_handler(tauri::generate_handler![commands::read_dir])
+    .invoke_handler(tauri::generate_handler![commands::read_text_file])
     .setup(|app, api| {
       #[cfg(mobile)]
       let icloud = mobile::init(app, api)?;

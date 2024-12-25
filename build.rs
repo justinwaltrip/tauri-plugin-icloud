@@ -1,4 +1,4 @@
-const COMMANDS: &[&str] = &["open_folder", "read_dir"];
+const COMMANDS: &[&str] = &["open_folder", "read_dir", "read_text_file"];
 
 fn main() {
   tauri_plugin::Builder::new(COMMANDS)

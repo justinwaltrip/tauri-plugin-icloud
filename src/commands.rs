@@ -19,3 +19,11 @@ pub(crate) async fn read_dir<R: Runtime>(
 ) -> Result<ReadDirResponse> {
     app.icloud().read_dir(payload)
 }
+
+#[command]
+pub(crate) async fn read_text_file<R: Runtime>(
+    app: AppHandle<R>,
+    payload: ReadTextFileRequest,
+) -> Result<ReadTextFileResponse> {
+    app.icloud().read_text_file(payload)
+}

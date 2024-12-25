@@ -90,4 +90,30 @@ Denies the read_dir command without any pre-configured scope.
 
 </td>
 </tr>
+
+<tr>
+<td>
+
+`icloud:allow-read-text-file`
+
+</td>
+<td>
+
+Enables the read_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-read-text-file`
+
+</td>
+<td>
+
+Denies the read_text_file command without any pre-configured scope.
+
+</td>
+</tr>
 </table>

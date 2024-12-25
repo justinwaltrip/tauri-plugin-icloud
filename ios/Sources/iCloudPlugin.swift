@@ -7,6 +7,10 @@ class ReadDirArgs: Decodable {
   let path: String
 }
 
+class ReadTextFileArgs: Decodable {
+  let path: String
+}
+
 class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
@@ -176,6 +180,40 @@ class iCloudPlugin: Plugin {
         invoke.resolve(response)
       } catch {
         invoke.reject("Error reading directory: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc public func readTextFile(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting readTextFile function")
+    let args = try invoke.parseArgs(ReadTextFileArgs.self)
+    let path = args.path
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      guard let url = URL(string: path) else {
+        invoke.reject("Invalid URL path")
+        return
+      }
+
+      // Try to get security-scoped access
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
+        let text = try String(contentsOf: url)
+        let response: [String: Any] = ["text": text]
+        invoke.resolve(response)
+      } catch {
+        invoke.reject("Error reading text file: \(error.localizedDescription)")
       }
     }
   }

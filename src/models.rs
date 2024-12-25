@@ -29,3 +29,15 @@ pub struct ReadDirEntry {
 pub struct ReadDirResponse {
     pub entries: Vec<ReadDirEntry>,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadTextFileRequest {
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReadTextFileResponse {
+    pub content: String,
+}

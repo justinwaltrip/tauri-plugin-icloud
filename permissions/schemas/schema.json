@@ -325,6 +325,16 @@
           "const": "deny-read-dir"
         },
         {
+          "description": "Enables the read_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-read-text-file"
+        },
+        {
+          "description": "Denies the read_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-read-text-file"
+        },
+        {
           "description": "Default permissions for the plugin",
           "type": "string",
           "const": "default"

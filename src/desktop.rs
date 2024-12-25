@@ -32,3 +32,11 @@ impl<R: Runtime> Icloud<R> {
         })
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_text_file(&self, _payload: ReadTextFileRequest) -> crate::Result<ReadTextFileResponse> {
+        Ok(ReadTextFileResponse {
+            content: "fake-content".to_string(),
+        })
+    }
+}

@@ -39,3 +39,11 @@ impl<R: Runtime> Icloud<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_text_file(&self, payload: ReadTextFileRequest) -> crate::Result<ReadTextFileResponse> {
+        self.0
+            .run_mobile_plugin("readTextFile", payload)
+            .map_err(Into::into)
+    }
+}

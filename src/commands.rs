@@ -40,6 +40,6 @@ pub(crate) async fn read_image_file<R: Runtime>(
 pub(crate) async fn write_text_file<R: Runtime>(
     app: AppHandle<R>,
     payload: WriteTextFileRequest,
-) -> Result<()> {
+) -> Result<WriteTextFileResponse> {
     app.icloud().write_text_file(payload)
 }

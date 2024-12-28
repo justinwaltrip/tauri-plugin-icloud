@@ -63,4 +63,7 @@ pub struct WriteTextFileRequest {
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WriteTextFileResponse {}
+pub struct WriteTextFileResponse {
+    pub success: bool,
+    pub path: String,
+}

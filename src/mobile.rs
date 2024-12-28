@@ -57,7 +57,7 @@ impl<R: Runtime> Icloud<R> {
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn write_text_file(&self, payload: WriteTextFileRequest) -> crate::Result<()> {
+    pub fn write_text_file(&self, payload: WriteTextFileRequest) -> crate::Result<WriteTextFileResponse> {
         self.0
             .run_mobile_plugin("writeTextFile", payload)
             .map_err(Into::into)

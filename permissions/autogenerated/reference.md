@@ -142,4 +142,30 @@ Denies the read_text_file command without any pre-configured scope.
 
 </td>
 </tr>
+
+<tr>
+<td>
+
+`icloud:allow-write-text-file`
+
+</td>
+<td>
+
+Enables the write_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-write-text-file`
+
+</td>
+<td>
+
+Denies the write_text_file command without any pre-configured scope.
+
+</td>
+</tr>
 </table>

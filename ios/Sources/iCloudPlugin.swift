@@ -16,6 +16,11 @@ class ReadImageFileArgs: Decodable {
   let path: String
 }
 
+class WriteTextFileArgs: Decodable {
+  let path: String
+  let content: String
+}
+
 class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
@@ -275,6 +280,54 @@ class iCloudPlugin: Plugin {
       } catch {
         NSLog("iCloudPlugin: Error reading image file: \(error)")
         invoke.reject("Error reading image file: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc public func writeTextFile(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting writeTextFile function")
+    let args = try invoke.parseArgs(WriteTextFileArgs.self)
+    let path = args.path
+    let content = args.content
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      let url = URL(fileURLWithPath: path)
+
+      // Resolve security-scoped bookmark
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
+        // Create intermediate directories if they don't exist
+        let directory = url.deletingLastPathComponent()
+        try FileManager.default.createDirectory(
+          at: directory,
+          withIntermediateDirectories: true)
+
+        // Write the content to file
+        try content.write(to: url, atomically: true, encoding: .utf8)
+
+        // Return success response
+        let response = [
+          "success": true,
+          "path": url.path,
+        ]
+        invoke.resolve(response)
+
+        NSLog("iCloudPlugin: Successfully wrote file to \(url.path)")
+
+      } catch {
+        NSLog("iCloudPlugin: Error writing file: \(error)")
+        invoke.reject("Error writing text file: \(error.localizedDescription)")
       }
     }
   }

@@ -345,6 +345,16 @@
           "const": "deny-read-text-file"
         },
         {
+          "description": "Enables the write_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-write-text-file"
+        },
+        {
+          "description": "Denies the write_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-write-text-file"
+        },
+        {
           "description": "Default permissions for the plugin",
           "type": "string",
           "const": "default"

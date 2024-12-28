@@ -53,3 +53,14 @@ pub struct ReadImageFileRequest {
 pub struct ReadImageFileResponse {
     pub content: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WriteTextFileRequest {
+    pub path: String,
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WriteTextFileResponse {}

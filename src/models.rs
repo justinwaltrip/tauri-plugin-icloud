@@ -67,3 +67,28 @@ pub struct WriteTextFileResponse {
     pub success: bool,
     pub path: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExistsRequest {
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExistsResponse {
+    pub exists: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateFolderRequest {
+    pub path: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateFolderResponse {
+    pub success: bool,
+    pub path: String,
+}

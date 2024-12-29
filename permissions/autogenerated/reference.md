@@ -16,6 +16,84 @@ Default permissions for the plugin
 <tr>
 <td>
 
+`icloud:allow-create-dir`
+
+</td>
+<td>
+
+Enables the create_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-create-dir`
+
+</td>
+<td>
+
+Denies the create_dir command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:allow-create-folder`
+
+</td>
+<td>
+
+Enables the create_folder command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-create-folder`
+
+</td>
+<td>
+
+Denies the create_folder command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:allow-exists`
+
+</td>
+<td>
+
+Enables the exists command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-exists`
+
+</td>
+<td>
+
+Denies the exists command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `icloud:allow-open-folder`
 
 </td>

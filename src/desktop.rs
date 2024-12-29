@@ -57,3 +57,20 @@ impl<R: Runtime> Icloud<R> {
         })
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn exists(&self, _payload: ExistsRequest) -> crate::Result<ExistsResponse> {
+        Ok(ExistsResponse {
+            exists: true,
+        })
+    }
+}
+
+impl<R: Runtime> Icloud<R> {
+    pub fn create_folder(&self, _payload: CreateFolderRequest) -> crate::Result<CreateFolderResponse> {
+        Ok(CreateFolderResponse {
+            success: true,
+            path: _payload.path,
+        })
+    }
+}

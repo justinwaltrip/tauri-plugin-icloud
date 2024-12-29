@@ -331,6 +331,72 @@ class iCloudPlugin: Plugin {
       }
     }
   }
+
+  @objc public func exists(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting exists function")
+    let args = try invoke.parseArgs(ReadTextFileArgs.self)
+    let path = args.path
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      let url = URL(fileURLWithPath: path)
+
+      // Resolve security-scoped bookmark
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      let exists = FileManager.default.fileExists(atPath: url.path)
+      let response = ["exists": exists]
+      invoke.resolve(response)
+    }
+  }
+
+  @objc public func createFolder(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting createFolder function")
+    let args = try invoke.parseArgs(ReadTextFileArgs.self)
+    let path = args.path
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      let url = URL(fileURLWithPath: path)
+
+      // Resolve security-scoped bookmark
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
+        try FileManager.default.createDirectory(
+          at: url,
+          withIntermediateDirectories: true,
+          attributes: nil)
+
+        let response = ["success": true, "path": url.path]
+        invoke.resolve(response)
+
+        NSLog("iCloudPlugin: Successfully created folder at \(url.path)")
+
+      } catch {
+        NSLog("iCloudPlugin: Error creating folder: \(error)")
+        invoke.reject("Error creating folder: \(error.localizedDescription)")
+      }
+    }
+  }
 }
 
 @_cdecl("init_plugin_icloud")

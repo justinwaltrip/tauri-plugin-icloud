@@ -43,3 +43,19 @@ pub(crate) async fn write_text_file<R: Runtime>(
 ) -> Result<WriteTextFileResponse> {
     app.icloud().write_text_file(payload)
 }
+
+#[command]
+pub(crate) async fn exists<R: Runtime>(
+    app: AppHandle<R>,
+    payload: ExistsRequest,
+) -> Result<ExistsResponse> {
+    app.icloud().exists(payload)
+}
+
+#[command]
+pub(crate) async fn create_folder<R: Runtime>(
+    app: AppHandle<R>,
+    payload: CreateFolderRequest,
+) -> Result<CreateFolderResponse> {
+    app.icloud().create_folder(payload)
+}

@@ -295,6 +295,36 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the create_dir command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-create-dir"
+        },
+        {
+          "description": "Denies the create_dir command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-create-dir"
+        },
+        {
+          "description": "Enables the create_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-create-folder"
+        },
+        {
+          "description": "Denies the create_folder command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-create-folder"
+        },
+        {
+          "description": "Enables the exists command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-exists"
+        },
+        {
+          "description": "Denies the exists command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-exists"
+        },
+        {
           "description": "Enables the open_folder command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-folder"

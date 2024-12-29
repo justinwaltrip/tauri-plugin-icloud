@@ -63,3 +63,19 @@ impl<R: Runtime> Icloud<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn exists(&self, payload: ExistsRequest) -> crate::Result<ExistsResponse> {
+        self.0
+            .run_mobile_plugin("exists", payload)
+            .map_err(Into::into)
+    }
+}
+
+impl<R: Runtime> Icloud<R> {
+    pub fn create_folder(&self, payload: CreateFolderRequest) -> crate::Result<CreateFolderResponse> {
+        self.0
+            .run_mobile_plugin("createFolder", payload)
+            .map_err(Into::into)
+    }
+}

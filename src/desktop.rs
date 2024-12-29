@@ -50,7 +50,7 @@ impl<R: Runtime> Icloud<R> {
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn write_text_file(&self, _payload: WriteTextFileRequest) -> crate::Result<()> {
+    pub fn write_text_file(&self, _payload: WriteTextFileRequest) -> crate::Result<WriteTextFileResponse> {
         Ok(WriteTextFileResponse {
             success: true,
             path: _payload.path,

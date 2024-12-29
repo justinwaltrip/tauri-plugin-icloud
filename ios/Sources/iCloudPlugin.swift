@@ -38,7 +38,7 @@ class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
 
-  // Add a method to save bookmark data
+  // #region helper functions
   private func saveSecurityScopedBookmark(for url: URL) throws -> String {
     let bookmarkData = try url.bookmarkData(
       options: .minimalBookmark,
@@ -80,6 +80,30 @@ class iCloudPlugin: Plugin {
     }
   }
 
+  // #endregion
+
+  // #region helper classes
+  private class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
+    private let completion: ([URL]) -> Void
+    init(completion: @escaping ([URL]) -> Void) {
+      self.completion = completion
+      super.init()
+      NSLog("DocumentPickerDelegate: Initialized")
+    }
+    func documentPicker(
+      _ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]
+    ) {
+      NSLog("DocumentPickerDelegate: Documents picked: \(urls)")
+      completion(urls)
+    }
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+      NSLog("DocumentPickerDelegate: Picker was cancelled")
+      completion([])
+    }
+  }
+  // #endregion
+
+  // #region plugin functions
   @objc public func openFolder(_ invoke: Invoke) throws {
     NSLog("iCloudPlugin: Starting openFolder function")
     DispatchQueue.main.async {
@@ -141,26 +165,6 @@ class iCloudPlugin: Plugin {
 
       documentPicker.delegate = self.documentPickerDelegate
       rootViewController.present(documentPicker, animated: true)
-    }
-  }
-
-  // Helper class to handle document picker delegate
-  private class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
-    private let completion: ([URL]) -> Void
-    init(completion: @escaping ([URL]) -> Void) {
-      self.completion = completion
-      super.init()
-      NSLog("DocumentPickerDelegate: Initialized")
-    }
-    func documentPicker(
-      _ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]
-    ) {
-      NSLog("DocumentPickerDelegate: Documents picked: \(urls)")
-      completion(urls)
-    }
-    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-      NSLog("DocumentPickerDelegate: Picker was cancelled")
-      completion([])
     }
   }
 
@@ -458,6 +462,7 @@ class iCloudPlugin: Plugin {
       }
     }
   }
+  // #endregion
 }
 
 @_cdecl("init_plugin_icloud")

@@ -59,3 +59,11 @@ pub(crate) async fn create_folder<R: Runtime>(
 ) -> Result<CreateFolderResponse> {
     app.icloud().create_folder(payload)
 }
+
+#[command]
+pub(crate) async fn rename<R: Runtime>(
+    app: AppHandle<R>,
+    payload: RenameRequest,
+) -> Result<RenameResponse> {
+    app.icloud().rename(payload)
+}

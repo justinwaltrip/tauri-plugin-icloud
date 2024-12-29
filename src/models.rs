@@ -92,3 +92,18 @@ pub struct CreateFolderResponse {
     pub success: bool,
     pub path: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenameRequest {
+    pub old: String,
+    pub new: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RenameResponse {
+    pub success: bool,
+    pub old: String,
+    pub new: String,
+}

@@ -21,6 +21,19 @@ class WriteTextFileArgs: Decodable {
   let content: String
 }
 
+class ExistsArgs: Decodable {
+  let path: String
+}
+
+class CreateFolderArgs: Decodable {
+  let path: String
+}
+
+class RenameArgs: Decodable {
+  let old: String
+  let new: String
+}
+
 class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
@@ -334,7 +347,7 @@ class iCloudPlugin: Plugin {
 
   @objc public func exists(_ invoke: Invoke) throws {
     NSLog("iCloudPlugin: Starting exists function")
-    let args = try invoke.parseArgs(ReadTextFileArgs.self)
+    let args = try invoke.parseArgs(ExistsArgs.self)
     let path = args.path
 
     DispatchQueue.global(qos: .userInitiated).async {
@@ -361,7 +374,7 @@ class iCloudPlugin: Plugin {
 
   @objc public func createFolder(_ invoke: Invoke) throws {
     NSLog("iCloudPlugin: Starting createFolder function")
-    let args = try invoke.parseArgs(ReadTextFileArgs.self)
+    let args = try invoke.parseArgs(CreateFolderArgs.self)
     let path = args.path
 
     DispatchQueue.global(qos: .userInitiated).async {
@@ -394,6 +407,54 @@ class iCloudPlugin: Plugin {
       } catch {
         NSLog("iCloudPlugin: Error creating folder: \(error)")
         invoke.reject("Error creating folder: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc public func rename(_ invoke: Invoke) throws {
+    NSLog("iCloudPlugin: Starting rename function")
+    let args = try invoke.parseArgs(RenameArgs.self)
+    let old = args.old
+    let new = args.new
+
+    DispatchQueue.global(qos: .userInitiated).async {
+      let oldURL = URL(fileURLWithPath: old)
+      let newURL = URL(fileURLWithPath: new)
+
+      // Resolve security-scoped bookmark
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        invoke.reject("Could not resolve security-scoped bookmark")
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+      }
+
+      do {
+        // Ensure paths are accessible
+        guard try oldURL.checkResourceIsReachable() else {
+          invoke.reject("Source file does not exist at path: \(oldURL.path)")
+          return
+        }
+        if FileManager.default.fileExists(atPath: newURL.path) {
+          invoke.reject("Destination file already exists: \(newURL.path)")
+          return
+        }
+
+        // Rename file
+        try FileManager.default.moveItem(at: oldURL, to: newURL)
+
+        let response = ["success": true, "old": oldURL.path, "new": newURL.path]
+        invoke.resolve(response)
+        NSLog("iCloudPlugin: Successfully renamed file to \(newURL.path)")
+
+      } catch {
+        NSLog("iCloudPlugin: Error renaming file: \(error)")
+        invoke.reject("Error renaming file: \(error.localizedDescription)")
       }
     }
   }

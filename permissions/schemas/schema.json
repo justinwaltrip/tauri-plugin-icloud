@@ -295,16 +295,6 @@
       "type": "string",
       "oneOf": [
         {
-          "description": "Enables the create_dir command without any pre-configured scope.",
-          "type": "string",
-          "const": "allow-create-dir"
-        },
-        {
-          "description": "Denies the create_dir command without any pre-configured scope.",
-          "type": "string",
-          "const": "deny-create-dir"
-        },
-        {
           "description": "Enables the create_folder command without any pre-configured scope.",
           "type": "string",
           "const": "allow-create-folder"
@@ -373,6 +363,16 @@
           "description": "Denies the read_text_file command without any pre-configured scope.",
           "type": "string",
           "const": "deny-read-text-file"
+        },
+        {
+          "description": "Enables the rename command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-rename"
+        },
+        {
+          "description": "Denies the rename command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-rename"
         },
         {
           "description": "Enables the write_text_file command without any pre-configured scope.",

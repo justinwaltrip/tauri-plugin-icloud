@@ -16,32 +16,6 @@ Default permissions for the plugin
 <tr>
 <td>
 
-`icloud:allow-create-dir`
-
-</td>
-<td>
-
-Enables the create_dir command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
-`icloud:deny-create-dir`
-
-</td>
-<td>
-
-Denies the create_dir command without any pre-configured scope.
-
-</td>
-</tr>
-
-<tr>
-<td>
-
 `icloud:allow-create-folder`
 
 </td>
@@ -217,6 +191,32 @@ Enables the read_text_file command without any pre-configured scope.
 <td>
 
 Denies the read_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:allow-rename`
+
+</td>
+<td>
+
+Enables the rename command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-rename`
+
+</td>
+<td>
+
+Denies the rename command without any pre-configured scope.
 
 </td>
 </tr>

@@ -74,3 +74,13 @@ impl<R: Runtime> Icloud<R> {
         })
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn rename(&self, _payload: RenameRequest) -> crate::Result<RenameResponse> {
+        Ok(RenameResponse {
+            success: true,
+            old: _payload.old,
+            new: _payload.new,
+        })
+    }
+}

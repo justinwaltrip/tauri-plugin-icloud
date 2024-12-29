@@ -79,3 +79,11 @@ impl<R: Runtime> Icloud<R> {
             .map_err(Into::into)
     }
 }
+
+impl<R: Runtime> Icloud<R> {
+    pub fn rename(&self, payload: RenameRequest) -> crate::Result<RenameResponse> {
+        self.0
+            .run_mobile_plugin("rename", payload)
+            .map_err(Into::into)
+    }
+}

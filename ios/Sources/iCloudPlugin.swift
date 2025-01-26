@@ -38,7 +38,8 @@ class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
 
-  // #region helper functions
+  // helper functions
+
   private func saveSecurityScopedBookmark(for url: URL) throws -> String {
     let bookmarkData = try url.bookmarkData(
       options: .minimalBookmark,
@@ -77,9 +78,8 @@ class iCloudPlugin: Plugin {
     }
   }
 
-  // #endregion
+  // helper classes
 
-  // #region helper classes
   private class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
     private let completion: ([URL]) -> Void
     init(completion: @escaping ([URL]) -> Void) {
@@ -95,9 +95,9 @@ class iCloudPlugin: Plugin {
       completion([])
     }
   }
-  // #endregion
 
-  // #region plugin functions
+  // plugin functions
+
   @objc public func openFolder(_ invoke: Invoke) throws {
     DispatchQueue.main.async {
       guard let rootViewController = UIApplication.shared.windows.first?.rootViewController else {
@@ -405,7 +405,6 @@ class iCloudPlugin: Plugin {
       }
     }
   }
-  // #endregion
 }
 
 @_cdecl("init_plugin_icloud")

@@ -44,6 +44,24 @@ pub struct ReadTextFileResponse {
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct BulkReadTextFileRequest {
+    pub paths: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkReadTextFileResponseFile {
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkReadTextFileResponse {
+    pub files: Vec<BulkReadTextFileResponseFile>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ReadImageFileRequest {
     pub path: String,
 }

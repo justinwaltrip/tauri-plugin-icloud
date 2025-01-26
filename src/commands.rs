@@ -29,6 +29,14 @@ pub(crate) async fn read_text_file<R: Runtime>(
 }
 
 #[command]
+pub(crate) async fn bulk_read_text_file<R: Runtime>(
+    app: AppHandle<R>,
+    payload: BulkReadTextFileRequest,
+) -> Result<BulkReadTextFileResponse> {
+    app.icloud().bulk_read_text_file(payload)
+}
+
+#[command]
 pub(crate) async fn read_image_file<R: Runtime>(
     app: AppHandle<R>,
     payload: ReadImageFileRequest,

@@ -16,6 +16,32 @@ Default permissions for the plugin
 <tr>
 <td>
 
+`icloud:allow-bulk-read-text-file`
+
+</td>
+<td>
+
+Enables the bulk_read_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`icloud:deny-bulk-read-text-file`
+
+</td>
+<td>
+
+Denies the bulk_read_text_file command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `icloud:allow-create-folder`
 
 </td>

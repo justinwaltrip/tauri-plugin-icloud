@@ -38,6 +38,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     .invoke_handler(tauri::generate_handler![commands::open_folder])
     .invoke_handler(tauri::generate_handler![commands::read_dir])
     .invoke_handler(tauri::generate_handler![commands::read_text_file])
+    .invoke_handler(tauri::generate_handler![commands::bulk_read_text_file])
     .invoke_handler(tauri::generate_handler![commands::read_image_file])
     .invoke_handler(tauri::generate_handler![commands::write_text_file])
     .invoke_handler(tauri::generate_handler![commands::exists])

@@ -4,10 +4,10 @@ use tauri::{plugin::PluginApi, AppHandle, Runtime};
 use crate::models::*;
 
 pub fn init<R: Runtime, C: DeserializeOwned>(
-  app: &AppHandle<R>,
-  _api: PluginApi<R, C>,
+    app: &AppHandle<R>,
+    _api: PluginApi<R, C>,
 ) -> crate::Result<Icloud<R>> {
-  Ok(Icloud(app.clone()))
+    Ok(Icloud(app.clone()))
 }
 
 /// Access to the icloud APIs.
@@ -34,7 +34,10 @@ impl<R: Runtime> Icloud<R> {
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn read_text_file(&self, _payload: ReadTextFileRequest) -> crate::Result<ReadTextFileResponse> {
+    pub fn read_text_file(
+        &self,
+        _payload: ReadTextFileRequest,
+    ) -> crate::Result<ReadTextFileResponse> {
         Ok(ReadTextFileResponse {
             content: "fake-content".to_string(),
         })
@@ -42,7 +45,23 @@ impl<R: Runtime> Icloud<R> {
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn read_image_file(&self, _payload: ReadImageFileRequest) -> crate::Result<ReadImageFileResponse> {
+    pub fn bulk_read_text_file(
+        &self,
+        _payload: BulkReadTextFileRequest,
+    ) -> crate::Result<BulkReadTextFileResponse> {
+        Ok(BulkReadTextFileResponse {
+            files: vec![BulkReadTextFileResponseFile {
+                content: "fake-content".to_string(),
+            }],
+        })
+    }
+}
+
+impl<R: Runtime> Icloud<R> {
+    pub fn read_image_file(
+        &self,
+        _payload: ReadImageFileRequest,
+    ) -> crate::Result<ReadImageFileResponse> {
         Ok(ReadImageFileResponse {
             content: "fake-content".to_string(),
         })
@@ -50,7 +69,10 @@ impl<R: Runtime> Icloud<R> {
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn write_text_file(&self, _payload: WriteTextFileRequest) -> crate::Result<WriteTextFileResponse> {
+    pub fn write_text_file(
+        &self,
+        _payload: WriteTextFileRequest,
+    ) -> crate::Result<WriteTextFileResponse> {
         Ok(WriteTextFileResponse {
             success: true,
             path: _payload.path,
@@ -60,14 +82,15 @@ impl<R: Runtime> Icloud<R> {
 
 impl<R: Runtime> Icloud<R> {
     pub fn exists(&self, _payload: ExistsRequest) -> crate::Result<ExistsResponse> {
-        Ok(ExistsResponse {
-            exists: true,
-        })
+        Ok(ExistsResponse { exists: true })
     }
 }
 
 impl<R: Runtime> Icloud<R> {
-    pub fn create_folder(&self, _payload: CreateFolderRequest) -> crate::Result<CreateFolderResponse> {
+    pub fn create_folder(
+        &self,
+        _payload: CreateFolderRequest,
+    ) -> crate::Result<CreateFolderResponse> {
         Ok(CreateFolderResponse {
             success: true,
             path: _payload.path,

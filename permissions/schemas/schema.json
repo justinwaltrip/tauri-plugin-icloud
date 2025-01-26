@@ -295,6 +295,16 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the bulk_read_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-bulk-read-text-file"
+        },
+        {
+          "description": "Denies the bulk_read_text_file command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-bulk-read-text-file"
+        },
+        {
           "description": "Enables the create_folder command without any pre-configured scope.",
           "type": "string",
           "const": "allow-create-folder"

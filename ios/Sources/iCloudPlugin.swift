@@ -12,6 +12,10 @@ class ReadTextFileArgs: Decodable {
   let path: String
 }
 
+class BulkReadTextFileArgs: Decodable {
+  let paths: [String]
+}
+
 class ReadImageFileArgs: Decodable {
   let path: String
 }
@@ -239,6 +243,31 @@ class iCloudPlugin: Plugin {
         invoke.resolve(["content": content])
       case .failure(let error):
         invoke.reject("Error reading text file: \(error.localizedDescription)")
+      }
+    }
+  }
+
+  @objc public func bulkReadTextFile(_ invoke: Invoke) throws {
+    let args = try invoke.parseArgs(BulkReadTextFileArgs.self)
+    let paths = args.paths
+    performSecureOperation({ _ in
+      try paths.map { path -> [String: String] in
+        let url = URL(fileURLWithPath: path)
+        guard FileManager.default.fileExists(atPath: url.path) else {
+          throw NSError(
+            domain: "iCloudPlugin",
+            code: -1,
+            userInfo: [NSLocalizedDescriptionKey: "File does not exist at path: \(url.path)"]
+          )
+        }
+        return ["path": path, "content": try String(contentsOf: url, encoding: .utf8)]
+      }
+    }) { result in
+      switch result {
+      case .success(let entries):
+        invoke.resolve(["entries": entries])
+      case .failure(let error):
+        invoke.reject("Error reading text files: \(error.localizedDescription)")
       }
     }
   }

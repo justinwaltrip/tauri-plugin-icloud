@@ -38,6 +38,12 @@ class iCloudPlugin: Plugin {
   private var documentPickerDelegate: DocumentPickerDelegate?
   private let bookmarkKey = "FolderBookmark"
 
+  // serial queue for handling file operations
+  private let fileOperationQueue = DispatchQueue(label: "com.icloud.plugin.fileops")
+
+  // semaphore to control concurrent access
+  private let accessSemaphore = DispatchSemaphore(value: 1)
+
   // helper functions
 
   private func saveSecurityScopedBookmark(for url: URL) throws -> String {
@@ -75,6 +81,39 @@ class iCloudPlugin: Plugin {
       return url
     } catch {
       return nil
+    }
+  }
+
+  private func performSecureOperation<T>(
+    _ operation: @escaping (URL) throws -> T, completion: @escaping (Result<T, Error>) -> Void
+  ) {
+    fileOperationQueue.async {
+      self.accessSemaphore.wait()
+
+      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
+        self.accessSemaphore.signal()
+        completion(
+          .failure(
+            NSError(
+              domain: "iCloudPlugin", code: -1,
+              userInfo: [NSLocalizedDescriptionKey: "Could not resolve security-scoped bookmark"])))
+        return
+      }
+
+      let granted = bookmarkURL.startAccessingSecurityScopedResource()
+      defer {
+        if granted {
+          bookmarkURL.stopAccessingSecurityScopedResource()
+        }
+        self.accessSemaphore.signal()
+      }
+
+      do {
+        let result = try operation(bookmarkURL)
+        completion(.success(result))
+      } catch {
+        completion(.failure(error))
+      }
     }
   }
 
@@ -158,38 +197,24 @@ class iCloudPlugin: Plugin {
     let args = try invoke.parseArgs(ReadDirArgs.self)
     let path = args.path
 
-    DispatchQueue.global(qos: .userInitiated).async {
-      guard let url = URL(string: path) else {
-        invoke.reject("Invalid URL path")
-        return
+    guard let url = URL(string: path) else {
+      invoke.reject("Invalid URL path")
+      return
+    }
+
+    performSecureOperation({ _ in
+      try FileManager.default.contentsOfDirectory(
+        at: url,
+        includingPropertiesForKeys: nil,
+        options: []
+      ).map { fileURL -> [String: String] in
+        ["name": fileURL.lastPathComponent]
       }
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
-      }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      do {
-        let contents = try FileManager.default.contentsOfDirectory(
-          at: url,
-          includingPropertiesForKeys: nil,
-          options: []
-        )
-
-        let entries = contents.map { fileURL -> [String: String] in
-          return ["name": fileURL.lastPathComponent]
-        }
-
-        let response: [String: Any] = ["entries": entries]
-        invoke.resolve(response)
-      } catch {
+    }) { result in
+      switch result {
+      case .success(let entries):
+        invoke.resolve(["entries": entries])
+      case .failure(let error):
         invoke.reject("Error reading directory: \(error.localizedDescription)")
       }
     }
@@ -198,33 +223,21 @@ class iCloudPlugin: Plugin {
   @objc public func readTextFile(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(ReadTextFileArgs.self)
     let path = args.path
-
-    DispatchQueue.global(qos: .userInitiated).async {
-      let url = URL(fileURLWithPath: path)
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
+    let url = URL(fileURLWithPath: path)
+    performSecureOperation({ _ in
+      guard FileManager.default.fileExists(atPath: url.path) else {
+        throw NSError(
+          domain: "iCloudPlugin",
+          code: -1,
+          userInfo: [NSLocalizedDescriptionKey: "File does not exist at path: \(url.path)"]
+        )
       }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      do {
-        guard FileManager.default.fileExists(atPath: url.path) else {
-          invoke.reject("File does not exist at path: \(url.path)")
-          return
-        }
-
-        let text = try String(contentsOf: url, encoding: .utf8)
-        let response: [String: Any] = ["content": text]
-        invoke.resolve(response)
-
-      } catch {
+      return try String(contentsOf: url, encoding: .utf8)
+    }) { result in
+      switch result {
+      case .success(let content):
+        invoke.resolve(["content": content])
+      case .failure(let error):
         invoke.reject("Error reading text file: \(error.localizedDescription)")
       }
     }
@@ -233,33 +246,22 @@ class iCloudPlugin: Plugin {
   @objc public func readImageFile(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(ReadImageFileArgs.self)
     let path = args.path
-
-    DispatchQueue.global(qos: .userInitiated).async {
-      let url = URL(fileURLWithPath: path)
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
+    let url = URL(fileURLWithPath: path)
+    performSecureOperation({ _ in
+      guard FileManager.default.fileExists(atPath: url.path) else {
+        throw NSError(
+          domain: "iCloudPlugin",
+          code: -1,
+          userInfo: [NSLocalizedDescriptionKey: "Image file does not exist at path: \(url.path)"]
+        )
       }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      do {
-        guard FileManager.default.fileExists(atPath: url.path) else {
-          invoke.reject("Image file does not exist at path: \(url.path)")
-          return
-        }
-
-        let imageData = try Data(contentsOf: url)
-        let base64String = imageData.base64EncodedString()
-        let response = ["content": base64String]
-        invoke.resolve(response)
-      } catch {
+      let imageData = try Data(contentsOf: url)
+      return imageData.base64EncodedString()
+    }) { result in
+      switch result {
+      case .success(let base64String):
+        invoke.resolve(["content": base64String])
+      case .failure(let error):
         invoke.reject("Error reading image file: \(error.localizedDescription)")
       }
     }
@@ -270,36 +272,24 @@ class iCloudPlugin: Plugin {
     let path = args.path
     let content = args.content
 
-    DispatchQueue.global(qos: .userInitiated).async {
-      let url = URL(fileURLWithPath: path)
+    let url = URL(fileURLWithPath: path)
 
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
-      }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      do {
-        let directory = url.deletingLastPathComponent()
-        try FileManager.default.createDirectory(
-          at: directory,
-          withIntermediateDirectories: true)
-
-        try content.write(to: url, atomically: true, encoding: .utf8)
-
-        let response = [
+    performSecureOperation({ _ in
+      let directory = url.deletingLastPathComponent()
+      try FileManager.default.createDirectory(
+        at: directory,
+        withIntermediateDirectories: true
+      )
+      try content.write(to: url, atomically: true, encoding: .utf8)
+      return url.path
+    }) { result in
+      switch result {
+      case .success(let path):
+        invoke.resolve([
           "success": true,
-          "path": url.path,
-        ]
-        invoke.resolve(response)
-
-      } catch {
+          "path": path,
+        ])
+      case .failure(let error):
         invoke.reject("Error writing text file: \(error.localizedDescription)")
       }
     }
@@ -308,57 +298,35 @@ class iCloudPlugin: Plugin {
   @objc public func exists(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(ExistsArgs.self)
     let path = args.path
-
-    DispatchQueue.global(qos: .userInitiated).async {
-      let url = URL(fileURLWithPath: path)
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
+    let url = URL(fileURLWithPath: path)
+    performSecureOperation({ _ in
+      return FileManager.default.fileExists(atPath: url.path)
+    }) { result in
+      switch result {
+      case .success(let exists):
+        invoke.resolve(["exists": exists])
+      case .failure(let error):
+        invoke.reject("Error checking file existence: \(error.localizedDescription)")
       }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      let exists = FileManager.default.fileExists(atPath: url.path)
-      let response = ["exists": exists]
-      invoke.resolve(response)
     }
   }
 
   @objc public func createFolder(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(CreateFolderArgs.self)
     let path = args.path
-
-    DispatchQueue.global(qos: .userInitiated).async {
-      let url = URL(fileURLWithPath: path)
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
-      }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
-      }
-
-      do {
-        try FileManager.default.createDirectory(
-          at: url,
-          withIntermediateDirectories: true,
-          attributes: nil)
-
-        let response = ["success": true, "path": url.path]
-        invoke.resolve(response)
-
-      } catch {
+    let url = URL(fileURLWithPath: path)
+    performSecureOperation({ _ in
+      try FileManager.default.createDirectory(
+        at: url,
+        withIntermediateDirectories: true,
+        attributes: nil
+      )
+      return url.path
+    }) { result in
+      switch result {
+      case .success(let path):
+        invoke.resolve(["success": true, "path": path])
+      case .failure(let error):
         invoke.reject("Error creating folder: \(error.localizedDescription)")
       }
     }
@@ -368,39 +336,32 @@ class iCloudPlugin: Plugin {
     let args = try invoke.parseArgs(RenameArgs.self)
     let old = args.old
     let new = args.new
-
-    DispatchQueue.global(qos: .userInitiated).async {
-      let oldURL = URL(fileURLWithPath: old)
-      let newURL = URL(fileURLWithPath: new)
-
-      guard let bookmarkURL = self.resolveSecurityScopedBookmark() else {
-        invoke.reject("Could not resolve security-scoped bookmark")
-        return
+    let oldURL = URL(fileURLWithPath: old)
+    let newURL = URL(fileURLWithPath: new)
+    performSecureOperation({ _ in
+      guard try oldURL.checkResourceIsReachable() else {
+        throw NSError(
+          domain: "iCloudPlugin",
+          code: -1,
+          userInfo: [
+            NSLocalizedDescriptionKey: "Source file does not exist at path: \(oldURL.path)"
+          ]
+        )
       }
-
-      let granted = bookmarkURL.startAccessingSecurityScopedResource()
-      defer {
-        if granted {
-          bookmarkURL.stopAccessingSecurityScopedResource()
-        }
+      if FileManager.default.fileExists(atPath: newURL.path) {
+        throw NSError(
+          domain: "iCloudPlugin",
+          code: -1,
+          userInfo: [NSLocalizedDescriptionKey: "Destination file already exists: \(newURL.path)"]
+        )
       }
-
-      do {
-        guard try oldURL.checkResourceIsReachable() else {
-          invoke.reject("Source file does not exist at path: \(oldURL.path)")
-          return
-        }
-        if FileManager.default.fileExists(atPath: newURL.path) {
-          invoke.reject("Destination file already exists: \(newURL.path)")
-          return
-        }
-
-        try FileManager.default.moveItem(at: oldURL, to: newURL)
-
-        let response = ["success": true, "old": oldURL.path, "new": newURL.path]
-        invoke.resolve(response)
-
-      } catch {
+      try FileManager.default.moveItem(at: oldURL, to: newURL)
+      return ["old": oldURL.path, "new": newURL.path]
+    }) { result in
+      switch result {
+      case .success(let response):
+        invoke.resolve(["success": true].merging(response) { (_, new) in new })
+      case .failure(let error):
         invoke.reject("Error renaming file: \(error.localizedDescription)")
       }
     }
